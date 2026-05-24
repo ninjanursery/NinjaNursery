@@ -1,0 +1,1062 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NinjaNursery™ AI Agent</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;500;600&display=swap');
+
+  :root {
+    --bg: #0a0a0f;
+    --surface: #12121a;
+    --surface2: #1a1a26;
+    --border: #2a2a3d;
+    --accent: #e94560;
+    --accent2: #7c3aed;
+    --accent3: #06b6d4;
+    --text: #f0f0f5;
+    --text2: #9090aa;
+    --success: #10b981;
+    --warning: #f59e0b;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Animated background */
+  body::before {
+    content: '';
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background:
+      radial-gradient(ellipse at 20% 20%, rgba(124,58,237,0.08) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 80%, rgba(233,69,96,0.08) 0%, transparent 50%),
+      radial-gradient(ellipse at 50% 50%, rgba(6,182,212,0.04) 0%, transparent 60%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container { max-width: 960px; margin: 0 auto; padding: 0 20px; position: relative; z-index: 1; }
+
+  /* Header */
+  header {
+    padding: 24px 0 20px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 28px;
+  }
+
+  .logo {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 22px;
+    font-weight: 900;
+    letter-spacing: 2px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2), var(--accent3));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .logo span { font-size: 11px; font-weight: 400; letter-spacing: 4px; display: block; color: var(--text2); -webkit-text-fill-color: var(--text2); margin-top: 2px; }
+
+  /* Settings Panel */
+  .settings-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
+  }
+
+  .settings-panel h3 {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 11px;
+    letter-spacing: 3px;
+    color: var(--accent3);
+    margin-bottom: 16px;
+    text-transform: uppercase;
+  }
+
+  .settings-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  .settings-grid.three { grid-template-columns: 1fr 1fr 1fr; }
+
+  @media (max-width: 640px) {
+    .settings-grid, .settings-grid.three { grid-template-columns: 1fr; }
+  }
+
+  .field-group { display: flex; flex-direction: column; gap: 6px; }
+  .field-group label { font-size: 11px; color: var(--text2); letter-spacing: 1px; text-transform: uppercase; }
+
+  input, select, textarea {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    padding: 9px 12px;
+    outline: none;
+    transition: border-color 0.2s;
+    width: 100%;
+  }
+
+  input:focus, select:focus, textarea:focus { border-color: var(--accent2); }
+  input::placeholder, textarea::placeholder { color: var(--text2); }
+  select option { background: var(--surface2); }
+
+  /* Generator Section */
+  .generator {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
+  }
+
+  .generator h3 {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 11px;
+    letter-spacing: 3px;
+    color: var(--accent);
+    margin-bottom: 16px;
+    text-transform: uppercase;
+  }
+
+  .controls-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr auto;
+    gap: 12px;
+    align-items: end;
+    margin-bottom: 16px;
+  }
+
+  @media (max-width: 640px) {
+    .controls-row { grid-template-columns: 1fr 1fr; }
+    .controls-row .generate-btn { grid-column: 1 / -1; }
+  }
+
+  .generate-btn {
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border: none;
+    border-radius: 8px;
+    color: white;
+    cursor: pointer;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    padding: 10px 20px;
+    transition: opacity 0.2s, transform 0.1s;
+    white-space: nowrap;
+  }
+
+  .generate-btn:hover { opacity: 0.9; }
+  .generate-btn:active { transform: scale(0.98); }
+  .generate-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  /* Status bar */
+  .status-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    background: var(--surface2);
+    border-radius: 8px;
+    font-size: 12px;
+    color: var(--text2);
+    margin-bottom: 20px;
+    min-height: 40px;
+  }
+
+  .status-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--text2);
+    flex-shrink: 0;
+    transition: background 0.3s;
+  }
+
+  .status-dot.running { background: var(--warning); animation: pulse 1s infinite; }
+  .status-dot.done { background: var(--success); }
+  .status-dot.error { background: var(--accent); }
+
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+  /* Output Cards */
+  .output-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-bottom: 20px;
+  }
+
+  @media (max-width: 640px) { .output-grid { grid-template-columns: 1fr; } }
+
+  .output-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    display: none;
+  }
+
+  .output-card.visible { display: block; animation: fadeIn 0.3s ease; }
+
+  @keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+
+  .card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    background: var(--surface2);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .card-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  .card-label.trend { color: var(--accent3); }
+  .card-label.leonardo { color: var(--accent2); }
+  .card-label.product { color: var(--accent); }
+  .card-label.pinterest { color: #e1306c; }
+
+  .copy-btn {
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text2);
+    cursor: pointer;
+    font-size: 11px;
+    padding: 4px 10px;
+    transition: all 0.2s;
+  }
+
+  .copy-btn:hover { border-color: var(--accent2); color: var(--text); }
+
+  .card-body {
+    padding: 14px;
+    font-size: 13px;
+    line-height: 1.6;
+    color: var(--text);
+    white-space: pre-wrap;
+    max-height: 220px;
+    overflow-y: auto;
+  }
+
+  .card-body::-webkit-scrollbar { width: 4px; }
+  .card-body::-webkit-scrollbar-track { background: transparent; }
+  .card-body::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  /* Full-width cards */
+  .output-card.full-width { grid-column: 1 / -1; }
+
+  /* Action Row */
+  .action-row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+  }
+
+  .action-btn {
+    flex: 1;
+    min-width: 140px;
+    padding: 11px 16px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    cursor: pointer;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  .action-btn:hover { border-color: var(--accent2); background: var(--surface2); }
+  .action-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .action-btn.sheets { border-color: var(--success); color: var(--success); }
+  .action-btn.telegram { border-color: var(--accent3); color: var(--accent3); }
+  .action-btn.whatsapp { border-color: #25d366; color: #25d366; }
+  .action-btn.sheets:hover { background: rgba(16,185,129,0.08); }
+  .action-btn.telegram:hover { background: rgba(6,182,212,0.08); }
+  .action-btn.whatsapp:hover { background: rgba(37,211,102,0.08); }
+
+  /* History */
+  .history-section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
+  }
+
+  .history-section h3 {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 11px;
+    letter-spacing: 3px;
+    color: var(--accent2);
+    margin-bottom: 14px;
+    text-transform: uppercase;
+  }
+
+  .history-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+  }
+
+  .history-table th {
+    text-align: left;
+    color: var(--text2);
+    font-weight: 500;
+    padding: 6px 10px;
+    border-bottom: 1px solid var(--border);
+    font-size: 11px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  .history-table td {
+    padding: 8px 10px;
+    border-bottom: 1px solid rgba(42,42,61,0.5);
+    color: var(--text);
+    vertical-align: top;
+  }
+
+  .history-table tr:last-child td { border-bottom: none; }
+
+  .badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  .badge.naruto { background: rgba(255,140,0,0.15); color: #ff8c00; }
+  .badge.jjk { background: rgba(124,58,237,0.15); color: #a78bfa; }
+  .badge.ds { background: rgba(233,69,96,0.15); color: var(--accent); }
+  .badge.op { background: rgba(6,182,212,0.15); color: var(--accent3); }
+  .badge.dn { background: rgba(15,15,25,0.5); color: #888; border: 1px solid #333; }
+
+  .empty-state {
+    text-align: center;
+    color: var(--text2);
+    font-size: 13px;
+    padding: 30px;
+  }
+
+  /* Toast */
+  #toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 18px;
+    font-size: 13px;
+    color: var(--text);
+    opacity: 0;
+    transform: translateY(10px);
+    transition: all 0.3s;
+    z-index: 1000;
+    max-width: 320px;
+  }
+
+  #toast.show { opacity: 1; transform: translateY(0); }
+  #toast.success { border-color: var(--success); }
+  #toast.error { border-color: var(--accent); }
+
+  /* Reminder scheduler */
+  .reminder-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr auto;
+    gap: 12px;
+    align-items: end;
+  }
+
+  .set-reminder-btn {
+    background: var(--surface2);
+    border: 1px solid var(--accent3);
+    border-radius: 8px;
+    color: var(--accent3);
+    cursor: pointer;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    padding: 9px 14px;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+
+  .set-reminder-btn:hover { background: rgba(6,182,212,0.1); }
+
+  .active-reminders {
+    margin-top: 12px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .reminder-tag {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 4px 12px;
+    font-size: 11px;
+    color: var(--text2);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .reminder-tag button {
+    background: none;
+    border: none;
+    color: var(--accent);
+    cursor: pointer;
+    font-size: 14px;
+    line-height: 1;
+    padding: 0;
+  }
+
+  /* Loading skeleton */
+  .skeleton {
+    background: linear-gradient(90deg, var(--surface2) 25%, var(--surface) 50%, var(--surface2) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+    border-radius: 4px;
+    height: 14px;
+    margin: 6px 0;
+  }
+
+  @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <header>
+    <div class="logo">
+      NinjaNursery™
+      <span>AI PRODUCT AGENT v1.0</span>
+    </div>
+  </header>
+
+  <!-- Settings -->
+  <div class="settings-panel">
+    <h3>⚙ API Configuration</h3>
+    <div class="settings-grid three">
+      <div class="field-group">
+        <label>Gemini API Key</label>
+        <input type="password" id="geminiKey" placeholder="AIza..." />
+      </div>
+      <div class="field-group">
+        <label>Google Apps Script URL</label>
+        <input type="text" id="sheetsUrl" placeholder="https://script.google.com/macros/s/..." />
+      </div>
+      <div class="field-group">
+        <label>Telegram Bot Token</label>
+        <input type="password" id="telegramToken" placeholder="123456:ABC..." />
+      </div>
+    </div>
+    <div class="settings-grid three" style="margin-top:12px">
+      <div class="field-group">
+        <label>Telegram Chat ID</label>
+        <input type="text" id="telegramChatId" placeholder="-100..." />
+      </div>
+      <div class="field-group">
+        <label>WhatsApp Number (CallMeBot)</label>
+        <input type="text" id="waNumber" placeholder="+8801XXXXXXXXX" />
+      </div>
+      <div class="field-group">
+        <label>CallMeBot API Key</label>
+        <input type="text" id="waApiKey" placeholder="Your CallMeBot key" />
+      </div>
+    </div>
+    <div style="margin-top:12px;text-align:right">
+      <button class="copy-btn" onclick="saveConfig()" style="padding:7px 16px;font-size:12px">💾 Save Config</button>
+    </div>
+  </div>
+
+  <!-- Generator -->
+  <div class="generator">
+    <h3>🎯 Generate Product Ideas</h3>
+    <div class="controls-row">
+      <div class="field-group">
+        <label>Collection</label>
+        <select id="collection">
+          <option value="Hidden Leaf Collection (Naruto)">Hidden Leaf — Naruto</option>
+          <option value="Tiny Sorcerer Series (JJK)">Tiny Sorcerer — JJK</option>
+          <option value="Breath of Life Collection (Demon Slayer)">Breath of Life — Demon Slayer</option>
+          <option value="Pirate Generation Capsule (One Piece)">Pirate Generation — One Piece</option>
+          <option value="Judgment Day Series (Death Note)">Judgment Day — Death Note</option>
+        </select>
+      </div>
+      <div class="field-group">
+        <label>Product Type</label>
+        <select id="productType">
+          <option value="Baby Romper">Baby Romper</option>
+          <option value="3D Anime Lamp">3D Anime Lamp</option>
+          <option value="Collectible Figure">Collectible Figure</option>
+          <option value="Anime Desk Mat">Anime Desk Mat</option>
+        </select>
+      </div>
+      <div class="field-group">
+        <label>Trend Focus</label>
+        <select id="trendFocus">
+          <option value="viral TikTok/Pinterest">TikTok / Pinterest</option>
+          <option value="gifting season">Gift Season</option>
+          <option value="new anime episode buzz">New Episode Buzz</option>
+          <option value="baby shower theme">Baby Shower</option>
+        </select>
+      </div>
+      <button class="generate-btn" id="generateBtn" onclick="generateIdea()">▶ GENERATE</button>
+    </div>
+  </div>
+
+  <!-- Status -->
+  <div class="status-bar">
+    <div class="status-dot" id="statusDot"></div>
+    <span id="statusText">Ready. Configure API keys above, then hit Generate.</span>
+  </div>
+
+  <!-- Output Cards -->
+  <div class="output-grid" id="outputGrid">
+    <div class="output-card" id="cardTrend">
+      <div class="card-header">
+        <span class="card-label trend">📈 Market Trend + Design Idea</span>
+        <button class="copy-btn" onclick="copyCard('trendContent')">Copy</button>
+      </div>
+      <div class="card-body" id="trendContent"></div>
+    </div>
+
+    <div class="output-card" id="cardLeonardo">
+      <div class="card-header">
+        <span class="card-label leonardo">🎨 Leonardo AI Prompt</span>
+        <button class="copy-btn" onclick="copyCard('leonardoContent')">Copy</button>
+      </div>
+      <div class="card-body" id="leonardoContent"></div>
+    </div>
+
+    <div class="output-card" id="cardProduct">
+      <div class="card-header">
+        <span class="card-label product">🛍 Product Title + Description</span>
+        <button class="copy-btn" onclick="copyCard('productContent')">Copy</button>
+      </div>
+      <div class="card-body" id="productContent"></div>
+    </div>
+
+    <div class="output-card" id="cardPinterest">
+      <div class="card-header">
+        <span class="card-label pinterest">📌 Pinterest Copy</span>
+        <button class="copy-btn" onclick="copyCard('pinterestContent')">Copy</button>
+      </div>
+      <div class="card-body" id="pinterestContent"></div>
+    </div>
+  </div>
+
+  <!-- Action Buttons -->
+  <div class="action-row" id="actionRow" style="display:none">
+    <button class="action-btn sheets" id="sheetsBtn" onclick="saveToSheets()">
+      📊 Save to Google Sheets
+    </button>
+    <button class="action-btn telegram" id="telegramBtn" onclick="sendTelegram()">
+      ✈ Send to Telegram
+    </button>
+    <button class="action-btn whatsapp" id="waBtn" onclick="sendWhatsApp()">
+      💬 Send to WhatsApp
+    </button>
+  </div>
+
+  <!-- Reminder Scheduler -->
+  <div class="settings-panel">
+    <h3>⏰ Daily Reminder Scheduler</h3>
+    <div class="reminder-row">
+      <div class="field-group">
+        <label>Reminder Time</label>
+        <input type="time" id="reminderTime" value="09:00" />
+      </div>
+      <div class="field-group">
+        <label>Message</label>
+        <input type="text" id="reminderMsg" placeholder="Time to generate today's NinjaNursery ideas! 🎌" />
+      </div>
+      <button class="set-reminder-btn" onclick="addReminder()">+ Set Reminder</button>
+    </div>
+    <div class="active-reminders" id="activeReminders"></div>
+    <p style="font-size:11px;color:var(--text2);margin-top:10px">
+      ⚠ Reminders only work while this page is open. For daily auto-reminders, keep a tab pinned.
+    </p>
+  </div>
+
+  <!-- History -->
+  <div class="history-section">
+    <h3>📁 Session History</h3>
+    <div id="historyContainer">
+      <div class="empty-state">No ideas generated yet this session.</div>
+    </div>
+  </div>
+
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ─── State ───────────────────────────────────────────────────────────────────
+let lastGenerated = null;
+let history = [];
+let reminders = [];
+let reminderIntervals = [];
+
+const ANIME_BADGE = {
+  'Naruto': 'naruto',
+  'JJK': 'jjk',
+  'Demon Slayer': 'ds',
+  'One Piece': 'op',
+  'Death Note': 'dn'
+};
+
+// ─── Config Save/Load ─────────────────────────────────────────────────────────
+function saveConfig() {
+  const cfg = {
+    geminiKey: document.getElementById('geminiKey').value,
+    sheetsUrl: document.getElementById('sheetsUrl').value,
+    telegramToken: document.getElementById('telegramToken').value,
+    telegramChatId: document.getElementById('telegramChatId').value,
+    waNumber: document.getElementById('waNumber').value,
+    waApiKey: document.getElementById('waApiKey').value,
+  };
+  // Use sessionStorage to avoid persisting keys in localStorage
+  sessionStorage.setItem('otakunest_cfg', JSON.stringify(cfg));
+  showToast('✅ Config saved for this session', 'success');
+}
+
+function loadConfig() {
+  const cfg = JSON.parse(sessionStorage.getItem('otakunest_cfg') || '{}');
+  if (cfg.geminiKey) document.getElementById('geminiKey').value = cfg.geminiKey;
+  if (cfg.sheetsUrl) document.getElementById('sheetsUrl').value = cfg.sheetsUrl;
+  if (cfg.telegramToken) document.getElementById('telegramToken').value = cfg.telegramToken;
+  if (cfg.telegramChatId) document.getElementById('telegramChatId').value = cfg.telegramChatId;
+  if (cfg.waNumber) document.getElementById('waNumber').value = cfg.waNumber;
+  if (cfg.waApiKey) document.getElementById('waApiKey').value = cfg.waApiKey;
+}
+
+// ─── Gemini API ───────────────────────────────────────────────────────────────
+async function callGemini(prompt) {
+  const key = document.getElementById('geminiKey').value.trim();
+  if (!key) throw new Error('Gemini API key not set!');
+
+  const res = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: { temperature: 0.9, maxOutputTokens: 2000 }
+      })
+    }
+  );
+
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error(err.error?.message || 'Gemini API error');
+  }
+
+  const data = await res.json();
+  return data.candidates[0].content.parts[0].text;
+}
+
+// ─── Main Generator ───────────────────────────────────────────────────────────
+async function generateIdea() {
+  const collection = document.getElementById('collection').value;
+  const productType = document.getElementById('productType').value;
+  const trendFocus = document.getElementById('trendFocus').value;
+
+  const btn = document.getElementById('generateBtn');
+  btn.disabled = true;
+  btn.textContent = '⏳ GENERATING...';
+
+  setStatus('running', 'Calling Gemini AI...');
+  hideCards();
+  document.getElementById('actionRow').style.display = 'none';
+
+  try {
+    const prompt = buildPrompt(collection, productType, trendFocus);
+    setStatus('running', 'Generating market trends & design ideas...');
+    const raw = await callGemini(prompt);
+
+    setStatus('running', 'Parsing results...');
+    const parsed = parseOutput(raw);
+
+    // Display
+    showCard('cardTrend', 'trendContent', parsed.trend);
+    showCard('cardLeonardo', 'leonardoContent', parsed.leonardo);
+    showCard('cardProduct', 'productContent', parsed.product);
+    showCard('cardPinterest', 'pinterestContent', parsed.pinterest);
+
+    lastGenerated = {
+      timestamp: new Date().toISOString(),
+      collection,
+      productType,
+      ...parsed
+    };
+
+    addToHistory(lastGenerated);
+    document.getElementById('actionRow').style.display = 'flex';
+    setStatus('done', '✅ Generation complete! Save to Sheets or send reminders.');
+
+  } catch (e) {
+    setStatus('error', '❌ Error: ' + e.message);
+    showToast('❌ ' + e.message, 'error');
+  }
+
+  btn.disabled = false;
+  btn.textContent = '▶ GENERATE';
+}
+
+function buildPrompt(collection, productType, trendFocus) {
+  return `You are a product research AI for NinjaNursery™, a premium anime-inspired baby lifestyle dropshipping brand targeting anime-loving Millennial/Gen-Z parents (age 22-38).
+
+Collection: ${collection}
+Product Type: ${productType}
+Trend Focus: ${trendFocus}
+
+Generate a complete product research output. Use EXACTLY these section headers with three equals signs:
+
+===TREND===
+Write 3-4 sentences about current market trends and a winning design idea for this product. Include specific design elements, color palettes, and what makes it appeal to anime parent buyers. Mention specific characters if relevant.
+
+===LEONARDO===
+Write a detailed Leonardo AI image generation prompt for this product's design mockup. Include: art style, color scheme, specific anime elements, product context, lighting, quality tags. Format: one paragraph, very detailed, ready to paste into Leonardo AI.
+
+===PRODUCT===
+TITLE: [Write a compelling Shopify product title, max 80 chars]
+DESCRIPTION: [Write a 150-200 word Shopify product description with emojis, storytelling approach, key features, and a call to action. Target anime-loving parents.]
+
+===PINTEREST===
+Write 3 Pinterest pin copy options for this product. Each pin has:
+- Pin Title (max 100 chars)
+- Pin Description (150-200 chars with hashtags)
+Separate each pin with ---`;
+}
+
+function parseOutput(raw) {
+  const get = (tag) => {
+    const re = new RegExp(`===${tag}===([\\s\\S]*?)(?:===|$)`);
+    const m = raw.match(re);
+    return m ? m[1].trim() : raw;
+  };
+
+  return {
+    trend: get('TREND'),
+    leonardo: get('LEONARDO'),
+    product: get('PRODUCT'),
+    pinterest: get('PINTEREST')
+  };
+}
+
+// ─── UI Helpers ───────────────────────────────────────────────────────────────
+function showCard(cardId, contentId, text) {
+  document.getElementById(contentId).textContent = text;
+  const card = document.getElementById(cardId);
+  card.classList.add('visible');
+}
+
+function hideCards() {
+  ['cardTrend','cardLeonardo','cardProduct','cardPinterest'].forEach(id => {
+    document.getElementById(id).classList.remove('visible');
+  });
+}
+
+function setStatus(state, msg) {
+  const dot = document.getElementById('statusDot');
+  dot.className = 'status-dot ' + state;
+  document.getElementById('statusText').textContent = msg;
+}
+
+function copyCard(contentId) {
+  const text = document.getElementById(contentId).textContent;
+  navigator.clipboard.writeText(text).then(() => showToast('📋 Copied!', 'success'));
+}
+
+function showToast(msg, type) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'show ' + (type || '');
+  setTimeout(() => t.className = '', 3000);
+}
+
+// ─── Google Sheets ────────────────────────────────────────────────────────────
+async function saveToSheets() {
+  const url = document.getElementById('sheetsUrl').value.trim();
+  if (!url) { showToast('❌ Apps Script URL not set!', 'error'); return; }
+  if (!lastGenerated) { showToast('❌ Generate an idea first!', 'error'); return; }
+
+  const btn = document.getElementById('sheetsBtn');
+  btn.disabled = true;
+  btn.textContent = '⏳ Saving...';
+
+  try {
+    await fetch(url, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(lastGenerated)
+    });
+    showToast('✅ Saved to Google Sheets!', 'success');
+    setStatus('done', '✅ Data saved to Google Sheets.');
+  } catch (e) {
+    showToast('❌ Sheets error: ' + e.message, 'error');
+  }
+
+  btn.disabled = false;
+  btn.textContent = '📊 Save to Google Sheets';
+}
+
+// ─── Telegram ─────────────────────────────────────────────────────────────────
+async function sendTelegram() {
+  const token = document.getElementById('telegramToken').value.trim();
+  const chatId = document.getElementById('telegramChatId').value.trim();
+  if (!token || !chatId) { showToast('❌ Telegram token & chat ID needed!', 'error'); return; }
+  if (!lastGenerated) { showToast('❌ Generate an idea first!', 'error'); return; }
+
+  const btn = document.getElementById('telegramBtn');
+  btn.disabled = true;
+  btn.textContent = '⏳ Sending...';
+
+  const msg = formatTelegramMsg(lastGenerated);
+
+  try {
+    const res = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ chat_id: chatId, text: msg, parse_mode: 'HTML' })
+    });
+    const data = await res.json();
+    if (data.ok) {
+      showToast('✅ Sent to Telegram!', 'success');
+    } else {
+      throw new Error(data.description);
+    }
+  } catch (e) {
+    showToast('❌ Telegram error: ' + e.message, 'error');
+  }
+
+  btn.disabled = false;
+  btn.textContent = '✈ Send to Telegram';
+}
+
+function formatTelegramMsg(data) {
+  const d = new Date(data.timestamp);
+  const dateStr = d.toLocaleDateString('en-GB') + ' ' + d.toLocaleTimeString('en-GB', {hour:'2-digit',minute:'2-digit'});
+
+  const titleMatch = data.product.match(/TITLE:\s*(.+)/);
+  const title = titleMatch ? titleMatch[1].trim() : 'New Product';
+
+  return `🎌 <b>NinjaNursery™ New Idea</b>
+📅 ${dateStr}
+
+<b>Collection:</b> ${data.collection}
+<b>Product:</b> ${data.productType}
+
+<b>🛍 Product Title:</b>
+${title}
+
+<b>📈 Trend Summary:</b>
+${data.trend.substring(0, 300)}...
+
+<b>🎨 Leonardo Prompt:</b>
+${data.leonardo.substring(0, 250)}...
+
+<i>Open the agent to copy full content.</i>
+#NinjaNursery #AnimeProducts #Dropshipping`;
+}
+
+// ─── WhatsApp (CallMeBot) ─────────────────────────────────────────────────────
+async function sendWhatsApp() {
+  const number = document.getElementById('waNumber').value.trim().replace(/[^0-9+]/g,'');
+  const apiKey = document.getElementById('waApiKey').value.trim();
+  if (!number || !apiKey) { showToast('❌ WhatsApp number & API key needed!', 'error'); return; }
+  if (!lastGenerated) { showToast('❌ Generate an idea first!', 'error'); return; }
+
+  const btn = document.getElementById('waBtn');
+  btn.disabled = true;
+  btn.textContent = '⏳ Sending...';
+
+  const titleMatch = lastGenerated.product.match(/TITLE:\s*(.+)/);
+  const title = titleMatch ? titleMatch[1].trim() : 'New Product';
+
+  const msg = encodeURIComponent(
+    `🎌 NinjaNursery™ New Idea!\n\n` +
+    `Collection: ${lastGenerated.collection}\n` +
+    `Product: ${lastGenerated.productType}\n\n` +
+    `Title: ${title}\n\n` +
+    `Trend: ${lastGenerated.trend.substring(0, 200)}...\n\n` +
+    `Open the agent for full details! 🚀`
+  );
+
+  try {
+    const url = `https://api.callmebot.com/whatsapp.php?phone=${number}&text=${msg}&apikey=${apiKey}`;
+    const res = await fetch(url);
+    const text = await res.text();
+    if (text.includes('Message queued')) {
+      showToast('✅ WhatsApp message sent!', 'success');
+    } else {
+      showToast('⚠ Sent (check WhatsApp)', 'success');
+    }
+  } catch (e) {
+    showToast('❌ WhatsApp error: ' + e.message, 'error');
+  }
+
+  btn.disabled = false;
+  btn.textContent = '💬 Send to WhatsApp';
+}
+
+// ─── History ──────────────────────────────────────────────────────────────────
+function addToHistory(data) {
+  history.unshift(data);
+  renderHistory();
+}
+
+function renderHistory() {
+  const container = document.getElementById('historyContainer');
+  if (history.length === 0) {
+    container.innerHTML = '<div class="empty-state">No ideas generated yet this session.</div>';
+    return;
+  }
+
+  const animeKey = (c) => {
+    if (c.includes('Naruto')) return ['Naruto', 'naruto'];
+    if (c.includes('JJK') || c.includes('Sorcerer')) return ['JJK', 'jjk'];
+    if (c.includes('Demon')) return ['DS', 'ds'];
+    if (c.includes('One Piece') || c.includes('Pirate')) return ['OP', 'op'];
+    if (c.includes('Death Note') || c.includes('Judgment')) return ['DN', 'dn'];
+    return ['?', 'naruto'];
+  };
+
+  const rows = history.map((item, i) => {
+    const d = new Date(item.timestamp);
+    const time = d.toLocaleTimeString('en-GB', {hour:'2-digit', minute:'2-digit'});
+    const [label, cls] = animeKey(item.collection);
+    const titleMatch = item.product.match(/TITLE:\s*(.+)/);
+    const title = titleMatch ? titleMatch[1].trim().substring(0, 50) : 'Untitled';
+
+    return `<tr>
+      <td style="color:var(--text2);font-size:11px">${time}</td>
+      <td><span class="badge ${cls}">${label}</span></td>
+      <td style="font-size:12px">${item.productType}</td>
+      <td style="font-size:12px;color:var(--text2)">${title}...</td>
+    </tr>`;
+  }).join('');
+
+  container.innerHTML = `<table class="history-table">
+    <thead><tr><th>Time</th><th>Anime</th><th>Type</th><th>Title</th></tr></thead>
+    <tbody>${rows}</tbody>
+  </table>`;
+}
+
+// ─── Reminders ────────────────────────────────────────────────────────────────
+function addReminder() {
+  const time = document.getElementById('reminderTime').value;
+  const msg = document.getElementById('reminderMsg').value || '🎌 Time to generate today\'s NinjaNursery ideas!';
+
+  if (!time) { showToast('❌ Set a reminder time!', 'error'); return; }
+
+  const id = Date.now();
+  reminders.push({ id, time, msg });
+  scheduleReminder({ id, time, msg });
+  renderReminders();
+  showToast(`⏰ Reminder set for ${time}`, 'success');
+}
+
+function scheduleReminder(reminder) {
+  const checkInterval = setInterval(() => {
+    const now = new Date();
+    const currentTime = now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
+    if (currentTime === reminder.time) {
+      triggerReminder(reminder);
+    }
+  }, 30000);
+
+  reminderIntervals.push({ id: reminder.id, interval: checkInterval });
+}
+
+function triggerReminder(reminder) {
+  showToast('⏰ ' + reminder.msg, 'success');
+
+  const token = document.getElementById('telegramToken').value.trim();
+  const chatId = document.getElementById('telegramChatId').value.trim();
+
+  if (token && chatId) {
+    fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        chat_id: chatId,
+        text: `⏰ NinjaNursery™ Reminder!\n\n${reminder.msg}\n\nTime to generate new product ideas! 🎌`,
+        parse_mode: 'HTML'
+      })
+    });
+  }
+
+  const waNumber = document.getElementById('waNumber').value.trim();
+  const waApiKey = document.getElementById('waApiKey').value.trim();
+
+  if (waNumber && waApiKey) {
+    const msg = encodeURIComponent(`⏰ NinjaNursery™ Reminder!\n${reminder.msg}\nTime to generate new product ideas! 🎌`);
+    fetch(`https://api.callmebot.com/whatsapp.php?phone=${waNumber}&text=${msg}&apikey=${waApiKey}`);
+  }
+}
+
+function removeReminder(id) {
+  reminders = reminders.filter(r => r.id !== id);
+  const found = reminderIntervals.find(r => r.id === id);
+  if (found) clearInterval(found.interval);
+  reminderIntervals = reminderIntervals.filter(r => r.id !== id);
+  renderReminders();
+}
+
+function renderReminders() {
+  const container = document.getElementById('activeReminders');
+  if (reminders.length === 0) { container.innerHTML = ''; return; }
+
+  container.innerHTML = reminders.map(r =>
+    `<div class="reminder-tag">
+      ⏰ ${r.time} — ${r.msg.substring(0, 30)}...
+      <button onclick="removeReminder(${r.id})">×</button>
+    </div>`
+  ).join('');
+}
+
+// ─── Init ─────────────────────────────────────────────────────────────────────
+loadConfig();
+</script>
+</body>
+</html>
